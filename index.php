@@ -204,6 +204,8 @@ class A
 class B
     extends A
 {
+    private $_id = 'ba';
+    
     private $a = 2;
     public $c;
 }
@@ -246,8 +248,6 @@ test(
 $data = $document['response']['body'];
 echo '<pre>';
 print_r($data);
-
-print_r($model->initialize($data));
 echo '</pre>';
 
 test(
