@@ -17,17 +17,7 @@ class Document
     /* \********************************************************************\ */
     /* \                            CONSTANTS                               \ */
     /* \********************************************************************\ */
-    const FIELD = '@field';
 
-    const PROPERTY = '@property';
-    
-    const SEPERATOR_OLD = '\\';
-    
-    const SEPERATOR_NEW = '\\';
-    
-    const BASE = '#base';
-    
-    const TYPE = '#class';
 
     /* \********************************************************************\ */
     /* \                            STATIC FIELDS                           \ */
@@ -37,19 +27,19 @@ class Document
     /* \********************************************************************\ */
     /* \                            STATIC METHODS                          \ */
     /* \********************************************************************\ */
-    public static function Factory($document)
+    public static function Factory($value)
     {
-        if (is_object($document))
+        if (is_object($value))
         {
-            $document = get_class($document);
+            $value = get_class($value);
         }
         
-        if (!isset(self::$Documents[$document]))
+        if (!isset(self::$Documents[$value]))
         {
-            self::$Documents[$document] = new Document($document);
+            self::$Documents[$value] = new Document($value);
         }
         
-        return self::$Documents[$document];
+        return self::$Documents[$value];
     }
 
     public static function Prototype($class)
@@ -60,6 +50,35 @@ class Document
         
         return $unserialized;
     }
+    
+    public static function Convert($value)
+    {
+        if (is_object($value))
+        {
+            return self::ConvertObject($value);
+        }
+        else if (is_array($value))
+        {
+            return self::ConvertArray($value);
+        }
+        else if (is_null($value))
+        {
+            return $value;
+        }
+        else
+        {
+            return $value;
+        }
+    }
+    
+    protected static function ConvertObject($value)
+    {
+        return self::Factory($value)->toDocument($value);
+    }
+    
+    protected static function ConverArray($value)
+    {
+    }
 
     /* \********************************************************************\ */
     /* \                            FIELDS                                  \ */
@@ -69,62 +88,31 @@ class Document
     /* \********************************************************************\ */
     /* \                            PROPERTIES                              \ */
     /* \********************************************************************\ */
+    protected $parents = array();
+    
     protected $class;
     
-    protected $fields;
+    protected $fields = array();
     
-    protected $methods;
+    protected $methods = array();
 
     /* \********************************************************************\ */
     /* \                            CONSTRUCTORS                            \ */
     /* \********************************************************************\ */
-    protected function __construct($model)
+    protected function __construct($class)
     {
-        $this->class = new \ReflectionClass($model);
+        $parent = $class;
         
-        foreach ($this->class->getProperties() as $value)
+        while ($parent = get_parent_class($parent))
         {
-            $value->setAccessible(true);
-
-            $doc = $value->getDocComment();
-
-            $matches = array();
-            
-            if (!preg_match('/'.self::FIELD.'(?:\ (.*)?)?/', $doc, $matches))
-            {
-                continue;
-            }
-
-            $name = $value->getName();
-            
-            if (isset($matches[1]))
-            {
-                $name = $matches[1];
-            }
-            
-            $this->fields[$name] = $value;
+            $this->parents[] = self::Factory($parent);
         }
         
-        foreach ($this->class->getMethods() as $value)
-        {
-            $value->setAccessible(true);
-            
-            $doc = $value->getDocComment();
-            
-            if (!preg_match('/'.self::PROPERTY.'(?:\ (.*)?)?/', $doc, $matches))
-            {
-                continue;
-            }
+        $this->class = new \ReflectionClass($class);
 
-            $name = $value->getName();
-            
-            if (isset($matches[1]))
-            {
-                $name = $matches[1];
-            }
-            
-            $this->methods[$name] = $value;
-        }
+        $this->fields();
+        
+        $this->methods();
     }
 
     /* \********************************************************************\ */
@@ -135,72 +123,88 @@ class Document
     /* \********************************************************************\ */
     /* \                            PROTECED METHODS                        \ */
     /* \********************************************************************\ */
+    protected function fields()
+    {
+        $this->fields = array(
+            'public' => $this->class->getProperties(\ReflectionProperty::IS_PUBLIC),
+            'protected' => $this->class->getProperties(\ReflectionProperty::IS_PROTECTED),
+            'private' => $this->class->getProperties(\ReflectionProperty::IS_PRIVATE),
+        );
 
+        foreach ($this->fields as &$fields)
+        {
+            foreach ($fields as $key=>$value)
+            {
+                $value->setAccessible(true);
+                
+                if ($value->getDeclaringClass()->getName() !== $this->class->getName())
+                {
+                    unset($fields[$key]);
+                }
+            }
+        }
+    }
+
+    protected function methods()
+    {
+        $this->methods = array(
+            'public' => $this->class->getMethods(\ReflectionMethod::IS_PUBLIC),
+            'protected' => $this->class->getMethods(\ReflectionMethod::IS_PROTECTED),
+            'private' => $this->class->getMethods(\ReflectionMethod::IS_PRIVATE),
+        );
+        
+        foreach ($this->methods as &$methods)
+        {
+            foreach ($methods as $key=>$value)
+            {
+                $value->setAccessible(true);
+
+                if (count($value->getParameters()) > 0 || $value->getDeclaringClass()->getName() !== $this->class->getName())
+                {
+                    unset($methods[$key]);
+                }
+            }
+        }
+    }
 
     /* \********************************************************************\ */
     /* \                            PUBLIC METHODS                          \ */
     /* \********************************************************************\ */
-    public function prepare($object)
+    public function toDocument($value)
     {
-        $array = array();
-
-        $array[self::TYPE] = str_replace(
-            self::SEPERATOR_OLD,
-            self::SEPERATOR_NEW,
-            $this->class->getName()
+        $array = array(
+            '#class' => $this->class->getName(),
+            '#base' => array(),
         );
-
-        if ($this->class->getParentClass())
+        
+        foreach ($this->parents as $parent)
         {
-            $parent = self::Factory($this->class->getParentClass()->getName());
+            $array['#base'][$parent->class->getName()] = array();
             
-            foreach ($parent->prepare($object) as $key=>$value)
+            foreach ($parent->fields['private'] as $field)
             {
-                $array[$key] = $value;
+                $field->setAccessible(true);
+                
+                $array['#base'][$parent->class->getName()][$field->getName()] = self::Convert($field->getValue($value));
             }
         }
         
-        foreach ($this->fields as $key=>$value)
+        foreach ($this->fields as $fields)
         {
-            if ($key === '_rev' && !$value->getValue($object))
+            foreach ($fields as $field)
             {
-                continue;
+                $array[$field->getName()] = self::Convert($field->getValue($value));
             }
-            
-            $array[$key] = $value->getValue($object);
         }
         
-        foreach ($this->methods as $key=>$value)
+        foreach ($this->methods as $methods)
         {
-            $array[$key] = $value->invoke($object);
+            foreach ($methods as $method)
+            {
+                $array['@'.$method->getName()] = self::Convert($method->invoke($value));
+            }
         }
         
         return $array;
-    }
-    
-    public function initialize($array, $object=null)
-    {
-        if ($object === null)
-        {
-            $object = self::Prototype(str_replace(
-                self::SEPERATOR_NEW,
-                self::SEPERATOR_OLD,
-                $array[self::TYPE]
-            ));
-        }
-
-        if ($this->class->getParentClass())
-        {
-            $parent = self::Factory($this->class->getParentClass()->getName());
-            
-            $parent->initialize($array, $object);
-        }
-        
-        foreach ($this->fields as $key=>$value)
-        {
-            $value->setValue($object, $array[$key]);
-        }
-        
-        return $object;
     }
 }

@@ -42,9 +42,6 @@
 <?php
 require_once('connection.php');
 require_once('document.php');
-require_once('model.php');
-require_once('testa.php');
-require_once('testb.php');
 
 $connection = \Chemisus\ODM\Connection::Factory();
 
@@ -199,23 +196,46 @@ test(
     false
 );
 
-$b = new \Chemisus\ODM\TestB();
-$b->setId('ba');
-$b->setRev('');
-$b->setAA('aa');
-$b->setAB('ab');
-$b->setAC('ac');
-$b->setAD('ad');
-$b->setBA('ba');
-$b->setBB('bb');
-$b->setBC('bc');
-$b->setBD('bd');
-$model = \Chemisus\ODM\Model::Factory($b);
+class A
+{
+    private $a = 1;
+}
+
+class B
+    extends A
+{
+    private $a = 2;
+    public $c;
+}
+
+class C
+    extends B
+{
+    private $a = 3;
+    
+    public function A()
+    {
+        return $this->a;
+    }
+
+    public function B($a)
+    {
+        return $this->c;
+    }
+}
+
+$b = new B();
+
+$b->c = new C();
+
+
 test(
     'Create Document BA',
-    $connection->post('/db1/', $model->prepare($b)),
+    $connection->post('/db1/', \Chemisus\ODM\Document::Convert($b)),
     false
 );
+echo '<pre>';
+print_r(\Chemisus\ODM\Document::Convert($b));
 
 test(
     'Get Document BA',
@@ -229,7 +249,6 @@ print_r($data);
 
 print_r($model->initialize($data));
 echo '</pre>';
-
 
 test(
     'Delete Database',
