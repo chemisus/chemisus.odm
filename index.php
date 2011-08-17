@@ -42,7 +42,7 @@
 <?php
 require_once('odm.php');
 
-class Object
+class Automobile
 {
     /**
      *
@@ -63,7 +63,7 @@ class Object
 }
 
 class Car
-    extends Object
+    extends Automobile
 {
     /**
      *
