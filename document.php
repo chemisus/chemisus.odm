@@ -78,6 +78,70 @@ class Document
     
     protected static function ConverArray($value)
     {
+        $array = array();
+        
+        foreach ($value as $key=>$value)
+        {
+            $array[$key] = self::Convert($value);
+        }
+        
+        return $array;
+    }
+    
+    public static function Revert($value)
+    {
+        if (is_array($value) && isset($value['#class']))
+        {
+            return self::RevertObject($value);
+        }
+        else if (is_array($value))
+        {
+            return self::RevertArray($value);
+        }
+        else
+        {
+            return $value;
+        }
+    }
+    
+    public static function RevertObject($data)
+    {
+        $class = $data['#class'];
+        
+        $object = self::Prototype($class);
+        
+        foreach (self::Factory($class)->parents as $parent)
+        {
+            foreach ($parent->fields as $fields)
+            {
+                foreach ($fields as $field)
+                {
+                    $field->setValue($object, self::Revert($data['#base'][$parent->class->getName()][$field->getName()]));
+                }
+            }
+        }
+        
+        foreach (self::Factory($class)->fields as $fields)
+        {
+            foreach ($fields as $field)
+            {
+                $field->setValue($object, self::Revert($data[$field->getName()]));
+            }
+        }
+            
+        return $object;
+    }
+    
+    public static function RevertArray($data)
+    {
+        $array = array();
+        
+        foreach ($data as $key=>$value)
+        {
+            $array[$key] = self::Revert($value);
+        }
+        
+        return $array;
     }
 
     /* \********************************************************************\ */
@@ -193,7 +257,10 @@ class Document
         {
             foreach ($fields as $field)
             {
-                $array[$field->getName()] = self::Convert($field->getValue($value));
+                if ($field->getName() && $field->getValue($value) !== null)
+                {
+                    $array[$field->getName()] = self::Convert($field->getValue($value));
+                }
             }
         }
         

@@ -41,217 +41,58 @@
 </script>
 <?php
 require_once('connection.php');
+require_once('server.php');
+require_once('database.php');
 require_once('document.php');
 
-$connection = \Chemisus\ODM\Connection::Factory();
+$server = Chemisus\ODM\Server::Factory('localhost:5984');
 
-function test($message, $transaction, $error=false)
+print_r($server->deleteDatabase('db'));
+
+print_r($server->createDatabase('db'));
+
+$database = $server->getDatabase('db');
+
+class Test
 {
-    echo '<div class="test">';
-    echo "<h3>{$message}</h3>";
-    if (!$error && !$transaction['response']['error'])
-    {
-        echo '<p class="success">No unexpected error returned</p>';
-    }
-    else if ($error && $error === $transaction['response']['error']['error'])
-    {
-        echo '<p class="success">Error returned as expected.</p>';
-    }
-    else if ($error && $error !== $transaction['response']['error']['error'])
-    {
-        echo '<p class="error">Expected error did not return.</p>';
-    }
-    else
-    {
-        echo '<h4 class="error">'.$transaction['response']['error']['error'].'</h4>';
-        echo '<p class="error">';
-        echo $transaction['response']['error']['reason'];
-        echo '</p>';
-    }
-    echo '<pre class="request">';
-    print_r($transaction['request']);
-    echo '</pre>';
-    echo '<pre class="head">';
-    print_r($transaction['response']['head']);
-    echo '</pre>';
-    echo '<pre class="body">';
-    print_r($transaction['response']['body']);
-    echo '</pre>';
-    echo '</div>';
-}
-
-
-
-test(
-    'Get MOTD without Slashes',
-    $connection->get(),
-    false
-);
-
-test(
-    'Get MOTD with Slashes',
-    $connection->get('/////'),
-    false
-);
-
-test(
-    'List All Databases without Slashes',
-    $connection->get('_all_dbs'),
-    false
-);
-
-test(
-    'List All Databases with Slashes',
-    $connection->get('/_all_dbs/'),
-    false
-);
-
-test(
-    'Get Non-Existent Database',
-    $connection->get('/db2/'),
-    'not_found'
-);
-
-test(
-    'Delete Non-Existent Database',
-    $connection->delete('/db2/'),
-    'not_found'
-);
-
-test(
-    'Get Document from Non-Existent Database',
-    $connection->get('/db2/doc2/'),
-    'not_found'
-);
-
-test(
-    'Put Document to Non-Existent Database',
-    $connection->put('/db2/doc2/', array('a'=>'A')),
-    'not_found'
-);
-
-test(
-    'Post Document to Non-Existent Database',
-    $connection->post('/db2/', array('a'=>'A')),
-    'not_found'
-);
-
-test(
-    'Delete Document from Non-Existent Database',
-    $connection->get('/db2/doc2/'),
-    'not_found'
-);
-
-test(
-    'Create Database',
-    $connection->put('/db1'),
-    false
-);
-
-test(
-    'Create Database Again',
-    $connection->put('/db1'),
-    'file_exists'
-);
-
-test(
-    'Put Document',
-    $connection->put('/db1/a', array('a'=>'a')),
-    false
-);
-
-test(
-    'Put Document',
-    $connection->put('/db1/a', array('a'=>'a')),
-    'conflict'
-);
-
-test(
-    'Post Document',
-    $connection->post('/db1/', array('b'=>'b')),
-    false
-);
-
-test(
-    'Put Document with ID',
-    $connection->post('/db1/', array('_id'=>'c')),
-    false
-);
-
-test(
-    'Post Document with ID',
-    $connection->post('/db1/', array('_id'=>'b')),
-    false
-);
-
-test(
-    'Get Document',
-    $document = $connection->get('/db1/a'),
-    false
-);
-
-test(
-    'Delete Document',
-    $connection->delete('/db1/a?rev=1-71b1114b184818dd4bbebe5ff10f7ba4'),
-    false
-);
-
-class A
-{
-    private $a = 1;
-}
-
-class B
-    extends A
-{
-    private $_id = 'ba';
+    private $_id = 'a';
     
-    private $a = 2;
-    public $c;
-}
-
-class C
-    extends B
-{
-    private $a = 3;
+    private $_rev;
     
-    public function A()
+    public function getId()
     {
-        return $this->a;
+        return $this->_id;
     }
-
-    public function B($a)
+    
+    public function getRev()
     {
-        return $this->c;
+        return $this->_rev;
     }
 }
 
-$b = new B();
+print_r($database->createDocument(new Test()));
 
-$b->c = new C();
-
-
-test(
-    'Create Document BA',
-    $connection->post('/db1/', \Chemisus\ODM\Document::Convert($b)),
-    false
-);
 echo '<pre>';
-print_r(\Chemisus\ODM\Document::Convert($b));
+print_r($document = $database->getDocument('a'));
 
-test(
-    'Get Document BA',
-    $document = $connection->get('/db1/ba'),
-    false
-);
+print_r($database->updateDocument($document));
+print_r($document = $database->getDocument('a'));
 
-$data = $document['response']['body'];
-echo '<pre>';
-print_r($data);
+print_r($database->updateDocument($document));
+print_r($document = $database->getDocument('a'));
+
+print_r($database->updateDocument($document));
+print_r($document = $database->getDocument('a'));
+
+print_r($database->updateDocument($document));
+print_r($document = $database->getDocument('a'));
+
+print_r($database->updateDocument($document));
+print_r($document = $database->getDocument('a'));
+
+print_r($database->updateDocument($document));
+print_r($document = $database->getDocument('a'));
+
 echo '</pre>';
 
-test(
-    'Delete Database',
-    $connection->delete('/db1'),
-    false
-);
+print_r($database->deleteDocument($document));

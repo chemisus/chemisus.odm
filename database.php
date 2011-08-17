@@ -22,27 +22,45 @@ class Database
     /* \********************************************************************\ */
     /* \                            STATIC FIELDS                           \ */
     /* \********************************************************************\ */
-
+    private static $Databases = array();
 
     /* \********************************************************************\ */
     /* \                            STATIC METHODS                          \ */
     /* \********************************************************************\ */
-
+    public static function Factory($server, $database)
+    {
+        if (!isset(self::$Databases[$server.'/'.$database]))
+        {
+            self::$Databases[$server.'/'.$database] = new Database($server, $database);
+        }
+        
+        return self::$Databases[$server.'/'.$database];
+    }
 
     /* \********************************************************************\ */
     /* \                            FIELDS                                  \ */
     /* \********************************************************************\ */
-
+    private $server;
+    
+    private $database;
 
     /* \********************************************************************\ */
     /* \                            PROPERTIES                              \ */
     /* \********************************************************************\ */
-
+    public function getServer()
+    {
+        return Server::Factory($this->server);
+    }
 
     /* \********************************************************************\ */
     /* \                            CONSTRUCTORS                            \ */
     /* \********************************************************************\ */
-
+    public function __construct($server, $database)
+    {
+        $this->server = $server;
+        
+        $this->database = $database;
+    }
 
     /* \********************************************************************\ */
     /* \                            PRIVATE METHODS                         \ */
@@ -57,4 +75,54 @@ class Database
     /* \********************************************************************\ */
     /* \                            PUBLIC METHODS                          \ */
     /* \********************************************************************\ */
+    public function createDocument($value)
+    {
+        $transction = $this->tryCreateDocument($value);
+        
+        return !$transaction['error'];
+    }
+    
+    public function tryCreateDocument($value)
+    {
+        return $this->getServer()->getConnection()->post($this->database, Document::Convert($value));
+    }
+    
+    public function getDocument($id)
+    {
+        $transaction = $this->getServer()->getConnection()->get($this->database.'/'.$id);
+        
+        return Document::Revert($transaction['response']['body']);
+    }
+
+    public function updateDocument($value)
+    {
+        $transction = $this->tryUpdateDocument($value);
+        
+        return !$transaction['error'];
+    }
+    
+    public function tryUpdateDocument($value)
+    {
+        return $this->getServer()->getConnection()->post($this->database, Document::Convert($value));
+    }
+    
+    public function deleteDocument($value)
+    {
+        $transction = $this->tryDeleteDocument($value);
+        
+        return !$transaction['error'];
+    }
+    
+    public function tryDeleteDocument($value)
+    {
+        $array = Document::Convert($value);
+        
+        $id = $array['_id'];
+        
+        $rev = $array['_rev'];
+        
+        $transaction = $this->getServer()->getConnection()->delete($this->database.'/'.$id.'?rev='.$rev);
+
+        return Document::Revert($transaction['response']['body']);
+    }
 }

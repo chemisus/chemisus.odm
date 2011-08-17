@@ -33,9 +33,9 @@ class Connection
     /* \********************************************************************\ */
     /* \                            STATIC METHODS                          \ */
     /* \********************************************************************\ */
-    public static function Factory($address=self::ADDRESS, $port=self::PORT)
+    public static function Factory($address=self::ADDRESS)
     {
-        $url = "http://{$address}:{$port}/";
+        $url = "http://{$address}/";
         
         if (!isset(self::$Connections[$url]))
         {
