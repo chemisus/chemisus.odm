@@ -3,8 +3,6 @@ chemisus.odm
 
 PHP Object Document Mapper (ODM) for [CouchDB](http://couchdb.apache.org/).
 
----
-
 Summary
 -------
 
@@ -133,16 +131,12 @@ top level of the JSON object.
        "count": 0
     }
 
----
-
 Requirements
 ------------
 chemisus.odm so far has the following requirements:
 
 * PHP 5.3 (namespaces)
 * php5-curl installed (connections)
-
----
 
 Installing
 ----------
@@ -154,8 +148,6 @@ will include the files necessary for chemisus.odm.
 To include odm:
 
     require_once('odm.php');
-
----
 
 Classes
 -------
@@ -170,8 +162,6 @@ There are currently four main objects in chemisus.odm:
 To actually use chemisus.odm, you really only need to interact
 with the server and database. The server will handle the connections,
 and the database will handle the documents.
-
---- 
 
 Examples
 --------
