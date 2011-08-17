@@ -45,57 +45,67 @@ require_once('server.php');
 require_once('database.php');
 require_once('document.php');
 
-class A
-{
-    private $class = 'A';
-
-    /**
-     *
-     * @field
-     */
-    public $blah = 0;
-}
-
-class B
-    extends A
-{
-    private $class = 'B';
-    
-    /**
-     *
-     * @field hmm
-     */
-    public function getBlah()
-    {
-        return $this->blah / 2;
-    }
-}
-
-class Test
-    extends B
+class Object
 {
     /**
      *
      * @field _id
      */
-    private $_id = 'a';
+    private $id;
     
     /**
      *
      * @field _rev
      */
-    private $_rev;
-
-    private $class = 'Test';
+    private $rev;
     
-    public function getId()
+    protected function __construct($id)
     {
-        return $this->_id;
+        $this->id = $id;
+    }
+}
+
+class Car
+    extends Object
+{
+    /**
+     *
+     * @field
+     */
+    private $make;
+    
+    /**
+     *
+     * @field
+     */
+    private $model;
+    
+    /**
+     *
+     * @field
+     */
+    private $year;
+    
+    /**
+     *
+     * @field
+     */
+    private $count = 0;
+    
+    public function __construct($make, $model, $year)
+    {
+        parent::__construct($make.'_'.$model.'_'.$year);
+
+        $this->make = $make;
+        
+        $this->model = $model;
+        
+        $this->year = $year;
     }
     
-    public function getRev()
+    public function update()
     {
-        return $this->_rev;
+        $this->count++;
     }
 }
 
@@ -110,8 +120,8 @@ function create()
     $server->createDatabase('db');
 
     $database = $server->getDatabase('db');
-
-    $database->createDocument(new Test());
+    
+    $database->createDocument(new Car('hyundai', 'elantra', '06'));
 }
 
 function update()
@@ -119,10 +129,10 @@ function update()
     $server = Chemisus\ODM\Server::Factory('localhost:5984');
 
     $database = $server->getDatabase('db');
-    
-    $document = $database->getDocument('a');
-    
-    $document->blah += 1;
+
+    $document = $database->getDocument('hyundai_elantra_06');
+
+    $document->update();
     
     $database->updateDocument($document);
 }
@@ -133,7 +143,7 @@ function fetch()
 
     $database = $server->getDatabase('db');
     
-    $document = $database->getDocument('a');
+    $document = $database->getDocument('hyundai_elantra_06');
     
     print_r($document);
 }

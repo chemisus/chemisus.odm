@@ -200,6 +200,21 @@ class Document
         {
             foreach ($parent->methods as $method)
             {
+                if ($method->getName() === '__construct')
+                {
+                    continue;
+                }
+                else if ($method->getName() === '__destruct')
+                {
+                    continue;
+                }
+                else if (count($method->getParameters()) > 0)
+                {
+                    continue;
+                }
+                
+                echo $method->getName();
+                
                 $doc = $method->getDocComment();
 
                 $matches = array();
@@ -243,6 +258,19 @@ class Document
         
         foreach ($this->methods as $method)
         {
+            if ($method->getName() === '__construct')
+            {
+                continue;
+            }
+            else if ($method->getName() === '__destruct')
+            {
+                continue;
+            }
+            else if (count($method->getParameters()) > 0)
+            {
+                continue;
+            }
+
             $doc = $method->getDocComment();
 
             $matches = array();
@@ -286,7 +314,19 @@ class Document
         {
             $value->setAccessible(true);
 
-            if ($value->getDeclaringClass()->getName() !== $this->class->getName())
+            if ($value->getName() === '__construct')
+            {
+                unset($this->methods[$key]);
+            }
+            else if ($value->getName() === '__destruct')
+            {
+                unset($this->methods[$key]);
+            }
+            else if (count($value->getParameters()) > 0)
+            {
+                unset($this->methods[$key]);
+            }
+            else if ($value->getDeclaringClass()->getName() !== $this->class->getName())
             {
                 unset($this->methods[$key]);
             }
