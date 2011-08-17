@@ -102,11 +102,6 @@ class Car
         
         $this->year = $year;
     }
-    
-    public function update()
-    {
-        $this->count++;
-    }
 }
 
 echo '<pre>';
@@ -132,7 +127,7 @@ function update()
 
     $document = $database->getDocument('hyundai_elantra_06');
 
-    $document->update();
+    $document->blah += 1;
     
     $database->updateDocument($document);
 }
@@ -147,8 +142,6 @@ function fetch()
     
     print_r($document);
 }
-
-//create();
 
 update();
 

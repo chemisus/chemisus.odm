@@ -77,9 +77,9 @@ class Database
     /* \********************************************************************\ */
     public function createDocument($value)
     {
-        $transction = $this->tryCreateDocument($value);
+        $transaction = $this->tryCreateDocument($value);
         
-        return !$transaction['error'];
+        return !$transaction['response']['error'];
     }
     
     public function tryCreateDocument($value)
@@ -96,9 +96,9 @@ class Database
 
     public function updateDocument($value)
     {
-        $transction = $this->tryUpdateDocument($value);
+        $transaction = $this->tryUpdateDocument($value);
         
-        return !$transaction['error'];
+        return !$transaction['response']['error'];
     }
     
     public function tryUpdateDocument($value)
@@ -108,9 +108,9 @@ class Database
     
     public function deleteDocument($value)
     {
-        $transction = $this->tryDeleteDocument($value);
+        $transaction = $this->tryDeleteDocument($value);
         
-        return !$transaction['error'];
+        return !$transaction['response']['error'];
     }
     
     public function tryDeleteDocument($value)

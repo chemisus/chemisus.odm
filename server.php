@@ -91,21 +91,21 @@ class Server
     /* \********************************************************************\ */
     public function createDatabase($name)
     {
-        $transction = $this->tryCreateDatabase($name);
+        $transaction = $this->tryCreateDatabase($name);
         
-        return !$transaction['error'];
+        return !$transaction['response']['error'];
     }
     
     public function tryCreateDatabase($name)
     {
-        return $this->connection->put($name);
+        return $this->connection->put($name, null);
     }
 
     public function deleteDatabase($name)
     {
-        $transction = $this->tryDeleteDatabase($name);
+        $transaction = $this->tryDeleteDatabase($name);
         
-        return !$transaction['error'];
+        return !$transaction['response']['error'];
     }
     
     public function tryDeleteDatabase($name)

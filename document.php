@@ -17,9 +17,9 @@ class Document
     /* \********************************************************************\ */
     /* \                            CONSTANTS                               \ */
     /* \********************************************************************\ */
-    const OBJECT = '#object';
+    const OBJECT = '$$object';
 
-    const VALUES = '#values';
+    const BASE = '$$base';
     
     const METHOD = '$';
 
@@ -352,7 +352,7 @@ class Document
          */
         $array = array(
             self::OBJECT => $this->class->getName(),
-            self::VALUES => array(
+            self::BASE => array(
                 $this->class->getName() => array(),
             ),
         );
@@ -364,7 +364,7 @@ class Document
         {
             $property->setAccessible(true);
             
-            $array[self::VALUES][$this->class->getName()][$property->getName()] = self::Convert($property->getValue($value));
+            $array[self::BASE][$this->class->getName()][$property->getName()] = self::Convert($property->getValue($value));
         }
         
         /**
@@ -374,7 +374,7 @@ class Document
         {
             $method->setAccessible(true);
             
-            $array[self::VALUES][$this->class->getName()][self::METHOD.$method->getName()] = self::Convert($method->invoke($value));
+            $array[self::BASE][$this->class->getName()][self::METHOD.$method->getName()] = self::Convert($method->invoke($value));
         }
 
         /**
@@ -385,7 +385,7 @@ class Document
             /**
              * assign a spot in the array for the parent.
              */
-            $array[self::VALUES][$parent->class->getName()] = array();
+            $array[self::BASE][$parent->class->getName()] = array();
             
             /**
              * save each property declared in the parent class.
@@ -394,7 +394,7 @@ class Document
             {
                 $property->setAccessible(true);
                 
-                $array[self::VALUES][$parent->class->getName()][$property->getName()] = self::Convert($property->getValue($value));
+                $array[self::BASE][$parent->class->getName()][$property->getName()] = self::Convert($property->getValue($value));
             }
             
             /**
@@ -402,7 +402,7 @@ class Document
              */
             foreach ($parent->methods as $method)
             {
-                $array[self::VALUES][$parent->class->getName()][self::METHOD.$method->getName()] = self::Convert($method->invoke($value));
+                $array[self::BASE][$parent->class->getName()][self::METHOD.$method->getName()] = self::Convert($method->invoke($value));
             }
         }
 
@@ -451,7 +451,7 @@ class Document
             {
                 $property->setAccessible(true);
             
-                $property->setValue($object, self::Revert($data[self::VALUES][$parent->class->getName()][$property->getName()]));
+                $property->setValue($object, self::Revert($data[self::BASE][$parent->class->getName()][$property->getName()]));
             }
         }
         
@@ -459,7 +459,7 @@ class Document
         {
             $property->setAccessible(true);
             
-            $property->setValue($object, self::Revert($data[self::VALUES][$this->class->getName()][$property->getName()]));
+            $property->setValue($object, self::Revert($data[self::BASE][$this->class->getName()][$property->getName()]));
         }
         
         foreach ($this->fields as $key=>$field)
