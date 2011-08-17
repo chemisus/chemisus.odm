@@ -17,7 +17,11 @@ class Document
     /* \********************************************************************\ */
     /* \                            CONSTANTS                               \ */
     /* \********************************************************************\ */
+    const OBJECT = '#object';
 
+    const VALUES = '#values';
+    
+    const METHOD = '$';
 
     /* \********************************************************************\ */
     /* \                            STATIC FIELDS                           \ */
@@ -90,7 +94,7 @@ class Document
     
     public static function Revert($value)
     {
-        if (is_array($value) && isset($value['#class']))
+        if (is_array($value) && isset($value[self::OBJECT]))
         {
             return self::RevertObject($value);
         }
@@ -106,7 +110,7 @@ class Document
     
     public static function RevertObject($data)
     {
-        return self::Factory($data['#class'])->fromDocument($data);
+        return self::Factory($data[self::OBJECT])->fromDocument($data);
     }
     
     public static function RevertArray($data)
@@ -168,13 +172,61 @@ class Document
     /* \********************************************************************\ */
     protected function fields()
     {
+        foreach (array_reverse($this->parents) as $parent)
+        {
+            foreach ($parent->properties as $property)
+            {
+                $doc = $property->getDocComment();
+
+                $matches = array();
+
+                if (!preg_match('/@field(?:\ (.*))?/', $doc, $matches))
+                {
+                    continue;
+                }
+
+                $name = $property->getName();
+
+                if (count($matches) > 1)
+                {
+                    $name = $matches[1];
+                }
+
+                $this->fields[$name] = $property;
+            }
+        }
+
+        foreach (array_reverse($this->parents) as $parent)
+        {
+            foreach ($parent->methods as $method)
+            {
+                $doc = $method->getDocComment();
+
+                $matches = array();
+
+                if (!preg_match('/@field(?:\ (.*))?/', $doc, $matches))
+                {
+                    continue;
+                }
+
+                $name = $method->getName();
+
+                if (count($matches) > 1)
+                {
+                    $name = $matches[1];
+                }
+
+                $this->fields[$name] = $method;
+            }
+        }
+        
         foreach ($this->properties as $property)
         {
             $doc = $property->getDocComment();
 
             $matches = array();
             
-            if (!preg_match('/@field(?:\s(.*))?/', $doc, $matches))
+            if (!preg_match('/@field(?:\ (.*))?/', $doc, $matches))
             {
                 continue;
             }
@@ -191,23 +243,23 @@ class Document
         
         foreach ($this->methods as $method)
         {
-            $doc = $property->getDocComment();
+            $doc = $method->getDocComment();
 
             $matches = array();
             
-            if (!preg_match('/@field(?:\s(.*))?/', $doc, $matches))
+            if (!preg_match('/@field(?:\ (.*))?/', $doc, $matches))
             {
                 continue;
             }
 
-            $name = $property->getName();
+            $name = $method->getName();
             
             if (count($matches) > 1)
             {
                 $name = $matches[1];
             }
             
-            $this->fields[$name] = $property;
+            $this->fields[$name] = $method;
         }
     }
     
@@ -244,54 +296,106 @@ class Document
     /* \********************************************************************\ */
     /* \                            PUBLIC METHODS                          \ */
     /* \********************************************************************\ */
+    /**
+     *
+     * @param object $value
+     * @return array
+     */
     public function toDocument($value)
     {
+        /**
+         * every object must have at least #class and #object. the #class field
+         * stores the name of the class that will be used when we are trying to
+         * revert the object. the #object field is an array that includes the
+         * class and inherited classes. each item in #object will also contain
+         * the values for the fields defined ONLY in that class..
+         */
         $array = array(
-            '#class' => $this->class->getName(),
-            '#object' => array(),
+            self::OBJECT => $this->class->getName(),
+            self::VALUES => array(
+                $this->class->getName() => array(),
+            ),
         );
-        
-        $array['#object'][$this->class->getName()] = array();
-            
+
+        /**
+         * save each property declared in the current class.
+         */
         foreach ($this->properties as $property)
         {
             $property->setAccessible(true);
             
-            $array['#object'][$this->class->getName()][$property->getName()] = self::Convert($property->getValue($value));
+            $array[self::VALUES][$this->class->getName()][$property->getName()] = self::Convert($property->getValue($value));
         }
         
+        /**
+         * save the return value of each method declared in the current class.
+         */
         foreach ($this->methods as $method)
         {
             $method->setAccessible(true);
             
-            $array['#object'][$this->class->getName()]['@'.$method->getName()] = self::Convert($method->invoke($value));
+            $array[self::VALUES][$this->class->getName()][self::METHOD.$method->getName()] = self::Convert($method->invoke($value));
         }
-        
+
+        /**
+         * for each parent class of the current class.
+         */
         foreach ($this->parents as $parent)
         {
-            $array['#object'][$parent->class->getName()] = array();
+            /**
+             * assign a spot in the array for the parent.
+             */
+            $array[self::VALUES][$parent->class->getName()] = array();
             
+            /**
+             * save each property declared in the parent class.
+             */
             foreach ($parent->properties as $property)
             {
                 $property->setAccessible(true);
                 
-                $array['#object'][$parent->class->getName()][$property->getName()] = self::Convert($property->getValue($value));
+                $array[self::VALUES][$parent->class->getName()][$property->getName()] = self::Convert($property->getValue($value));
             }
             
+            /**
+             * save the return value of each method declared in the parent class.
+             */
             foreach ($parent->methods as $method)
             {
-                $array['#object'][$parent->class->getName()]['@'.$method->getName()] = self::Convert($method->invoke($value));
+                $array[self::VALUES][$parent->class->getName()][self::METHOD.$method->getName()] = self::Convert($method->invoke($value));
             }
         }
-        
+
+        /**
+         * for each field, we will save the field value in the top level of the
+         * document.
+         */
         foreach ($this->fields as $key=>$field)
         {
-            if ($key === '_rev' && $field->getValue($value) === null)
+            /**
+             * if the field name is _rev, and its null, then we dont want to
+             * save it.
+             */
+            if ($key === '_rev')
             {
-                continue;
+                if ($field instanceof \ReflectionMethod && $field->invoke($value) === null)
+                {
+                    continue;
+                }
+                else if ($field instanceof \ReflectionProperty && $field->getValue($value) === null)
+                {
+                    continue;
+                }
             }
             
-            $array[$key] = $field->getValue($value);
+            if ($field instanceof \ReflectionMethod)
+            {
+                $array[$key] = $field->invoke($value);
+            }
+            else if ($field instanceof \ReflectionProperty)
+            {
+                $array[$key] = $field->getValue($value);
+            }
         }
         
         return $array;
@@ -307,7 +411,7 @@ class Document
             {
                 $property->setAccessible(true);
             
-                $property->setValue($object, self::Revert($data['#object'][$parent->class->getName()][$property->getName()]));
+                $property->setValue($object, self::Revert($data[self::VALUES][$parent->class->getName()][$property->getName()]));
             }
         }
         
@@ -315,7 +419,7 @@ class Document
         {
             $property->setAccessible(true);
             
-            $property->setValue($object, self::Revert($data['#object'][$this->class->getName()][$property->getName()]));
+            $property->setValue($object, self::Revert($data[self::VALUES][$this->class->getName()][$property->getName()]));
         }
         
         foreach ($this->fields as $key=>$field)

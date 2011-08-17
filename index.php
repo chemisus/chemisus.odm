@@ -48,7 +48,11 @@ require_once('document.php');
 class A
 {
     private $class = 'A';
-    
+
+    /**
+     *
+     * @field
+     */
     public $blah = 0;
 }
 
@@ -56,6 +60,15 @@ class B
     extends A
 {
     private $class = 'B';
+    
+    /**
+     *
+     * @field hmm
+     */
+    public function getBlah()
+    {
+        return $this->blah / 2;
+    }
 }
 
 class Test
