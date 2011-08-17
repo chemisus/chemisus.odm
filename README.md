@@ -103,8 +103,8 @@ top level of the JSON object.
         [model:Car:private] => elantra
         [year:Car:private] => 06
         [count:Car:private] => 0
-        [id:Object:private] => hyundai_elantra_06
-        [rev:Object:private] => 5-6d01dc52df805f82febac528ac1074a7
+        [id:Automobile:private] => hyundai_elantra_06
+        [rev:Automobile:private] => 5-6d01dc52df805f82febac528ac1074a7
     )
 
 ### JSON Object (After saving a few times):
