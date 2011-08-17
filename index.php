@@ -45,19 +45,35 @@ require_once('server.php');
 require_once('database.php');
 require_once('document.php');
 
-$server = Chemisus\ODM\Server::Factory('localhost:5984');
+class A
+{
+    private $class = 'A';
+    
+    public $blah = 0;
+}
 
-print_r($server->deleteDatabase('db'));
-
-print_r($server->createDatabase('db'));
-
-$database = $server->getDatabase('db');
+class B
+    extends A
+{
+    private $class = 'B';
+}
 
 class Test
+    extends B
 {
+    /**
+     *
+     * @field _id
+     */
     private $_id = 'a';
     
+    /**
+     *
+     * @field _rev
+     */
     private $_rev;
+
+    private $class = 'Test';
     
     public function getId()
     {
@@ -70,29 +86,49 @@ class Test
     }
 }
 
-print_r($database->createDocument(new Test()));
-
 echo '<pre>';
-print_r($document = $database->getDocument('a'));
 
-print_r($database->updateDocument($document));
-print_r($document = $database->getDocument('a'));
+function create()
+{
+    $server = Chemisus\ODM\Server::Factory('localhost:5984');
 
-print_r($database->updateDocument($document));
-print_r($document = $database->getDocument('a'));
+    $server->deleteDatabase('db');
 
-print_r($database->updateDocument($document));
-print_r($document = $database->getDocument('a'));
+    $server->createDatabase('db');
 
-print_r($database->updateDocument($document));
-print_r($document = $database->getDocument('a'));
+    $database = $server->getDatabase('db');
 
-print_r($database->updateDocument($document));
-print_r($document = $database->getDocument('a'));
+    $database->createDocument(new Test());
+}
 
-print_r($database->updateDocument($document));
-print_r($document = $database->getDocument('a'));
+function update()
+{
+    $server = Chemisus\ODM\Server::Factory('localhost:5984');
+
+    $database = $server->getDatabase('db');
+    
+    $document = $database->getDocument('a');
+    
+    $document->blah += 1;
+    
+    $database->updateDocument($document);
+}
+
+function fetch()
+{
+    $server = Chemisus\ODM\Server::Factory('localhost:5984');
+
+    $database = $server->getDatabase('db');
+    
+    $document = $database->getDocument('a');
+    
+    print_r($document);
+}
+
+//create();
+
+update();
+
+fetch();
 
 echo '</pre>';
-
-print_r($database->deleteDocument($document));

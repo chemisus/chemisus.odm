@@ -106,30 +106,7 @@ class Document
     
     public static function RevertObject($data)
     {
-        $class = $data['#class'];
-        
-        $object = self::Prototype($class);
-        
-        foreach (self::Factory($class)->parents as $parent)
-        {
-            foreach ($parent->fields as $fields)
-            {
-                foreach ($fields as $field)
-                {
-                    $field->setValue($object, self::Revert($data['#base'][$parent->class->getName()][$field->getName()]));
-                }
-            }
-        }
-        
-        foreach (self::Factory($class)->fields as $fields)
-        {
-            foreach ($fields as $field)
-            {
-                $field->setValue($object, self::Revert($data[$field->getName()]));
-            }
-        }
-            
-        return $object;
+        return self::Factory($data['#class'])->fromDocument($data);
     }
     
     public static function RevertArray($data)
@@ -156,7 +133,7 @@ class Document
     
     protected $class;
     
-    protected $fields = array();
+    protected $properties = array();
     
     protected $methods = array();
 
@@ -174,9 +151,11 @@ class Document
         
         $this->class = new \ReflectionClass($class);
 
-        $this->fields();
+        $this->properties();
         
         $this->methods();
+        
+        $this->fields();
     }
 
     /* \********************************************************************\ */
@@ -189,44 +168,75 @@ class Document
     /* \********************************************************************\ */
     protected function fields()
     {
-        $this->fields = array(
-            'public' => $this->class->getProperties(\ReflectionProperty::IS_PUBLIC),
-            'protected' => $this->class->getProperties(\ReflectionProperty::IS_PROTECTED),
-            'private' => $this->class->getProperties(\ReflectionProperty::IS_PRIVATE),
-        );
-
-        foreach ($this->fields as &$fields)
+        foreach ($this->properties as $property)
         {
-            foreach ($fields as $key=>$value)
+            $doc = $property->getDocComment();
+
+            $matches = array();
+            
+            if (!preg_match('/@field(?:\s(.*))?/', $doc, $matches))
             {
-                $value->setAccessible(true);
-                
-                if ($value->getDeclaringClass()->getName() !== $this->class->getName())
-                {
-                    unset($fields[$key]);
-                }
+                continue;
+            }
+
+            $name = $property->getName();
+            
+            if (count($matches) > 1)
+            {
+                $name = $matches[1];
+            }
+            
+            $this->fields[$name] = $property;
+        }
+        
+        foreach ($this->methods as $method)
+        {
+            $doc = $property->getDocComment();
+
+            $matches = array();
+            
+            if (!preg_match('/@field(?:\s(.*))?/', $doc, $matches))
+            {
+                continue;
+            }
+
+            $name = $property->getName();
+            
+            if (count($matches) > 1)
+            {
+                $name = $matches[1];
+            }
+            
+            $this->fields[$name] = $property;
+        }
+    }
+    
+    protected function properties()
+    {
+        $this->properties = $this->class->getProperties();
+
+        foreach ($this->properties as $key=>$value)
+        {
+            $value->setAccessible(true);
+            
+            if ($value->getDeclaringClass()->getName() !== $this->class->getName())
+            {
+                unset($this->properties[$key]);
             }
         }
     }
 
     protected function methods()
     {
-        $this->methods = array(
-            'public' => $this->class->getMethods(\ReflectionMethod::IS_PUBLIC),
-            'protected' => $this->class->getMethods(\ReflectionMethod::IS_PROTECTED),
-            'private' => $this->class->getMethods(\ReflectionMethod::IS_PRIVATE),
-        );
+        $this->methods = $this->class->getMethods();
         
-        foreach ($this->methods as &$methods)
+        foreach ($this->methods as $key=>$value)
         {
-            foreach ($methods as $key=>$value)
-            {
-                $value->setAccessible(true);
+            $value->setAccessible(true);
 
-                if (count($value->getParameters()) > 0 || $value->getDeclaringClass()->getName() !== $this->class->getName())
-                {
-                    unset($methods[$key]);
-                }
+            if ($value->getDeclaringClass()->getName() !== $this->class->getName())
+            {
+                unset($this->methods[$key]);
             }
         }
     }
@@ -238,40 +248,88 @@ class Document
     {
         $array = array(
             '#class' => $this->class->getName(),
-            '#base' => array(),
+            '#object' => array(),
         );
+        
+        $array['#object'][$this->class->getName()] = array();
+            
+        foreach ($this->properties as $property)
+        {
+            $property->setAccessible(true);
+            
+            $array['#object'][$this->class->getName()][$property->getName()] = self::Convert($property->getValue($value));
+        }
+        
+        foreach ($this->methods as $method)
+        {
+            $method->setAccessible(true);
+            
+            $array['#object'][$this->class->getName()]['@'.$method->getName()] = self::Convert($method->invoke($value));
+        }
         
         foreach ($this->parents as $parent)
         {
-            $array['#base'][$parent->class->getName()] = array();
+            $array['#object'][$parent->class->getName()] = array();
             
-            foreach ($parent->fields['private'] as $field)
+            foreach ($parent->properties as $property)
             {
-                $field->setAccessible(true);
+                $property->setAccessible(true);
                 
-                $array['#base'][$parent->class->getName()][$field->getName()] = self::Convert($field->getValue($value));
+                $array['#object'][$parent->class->getName()][$property->getName()] = self::Convert($property->getValue($value));
+            }
+            
+            foreach ($parent->methods as $method)
+            {
+                $array['#object'][$parent->class->getName()]['@'.$method->getName()] = self::Convert($method->invoke($value));
             }
         }
         
-        foreach ($this->fields as $fields)
+        foreach ($this->fields as $key=>$field)
         {
-            foreach ($fields as $field)
+            if ($key === '_rev' && $field->getValue($value) === null)
             {
-                if ($field->getName() && $field->getValue($value) !== null)
-                {
-                    $array[$field->getName()] = self::Convert($field->getValue($value));
-                }
+                continue;
             }
-        }
-        
-        foreach ($this->methods as $methods)
-        {
-            foreach ($methods as $method)
-            {
-                $array['@'.$method->getName()] = self::Convert($method->invoke($value));
-            }
+            
+            $array[$key] = $field->getValue($value);
         }
         
         return $array;
+    }
+    
+    public function fromDocument($data)
+    {
+        $object = self::Prototype($this->class->getName());
+        
+        foreach ($this->parents as $parent)
+        {
+            foreach ($parent->properties as $property)
+            {
+                $property->setAccessible(true);
+            
+                $property->setValue($object, self::Revert($data['#object'][$parent->class->getName()][$property->getName()]));
+            }
+        }
+        
+        foreach ($this->properties as $property)
+        {
+            $property->setAccessible(true);
+            
+            $property->setValue($object, self::Revert($data['#object'][$this->class->getName()][$property->getName()]));
+        }
+        
+        foreach ($this->fields as $key=>$field)
+        {
+            if (!$field instanceof \ReflectionProperty)
+            {
+                continue;
+            }
+            
+            $field->setAccessible(true);
+            
+            $field->setValue($object, self::Revert($data[$key]));
+        }
+            
+        return $object;
     }
 }
