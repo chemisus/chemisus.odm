@@ -46,102 +46,62 @@ class Automobile
 {
     /**
      *
+     * @var string
      * @field _id
      */
-    private $id;
+    private $_id;
     
     /**
      *
+     * @var string
      * @field _rev
      */
-    private $rev;
+    private $_rev;
     
-    protected function __construct($id)
+    /**
+     *
+     * @var string
+     * @field
+     */
+    private $wheels;
+
+    /**
+     *
+     * @var string
+     * @field
+     */
+    private $color;
+    
+    public function __construct($wheels, $color)
     {
-        $this->id = $id;
+        $this->wheels = $wheels;
+        
+        $this->color = $color;
     }
 }
 
 class Car
     extends Automobile
 {
-    /**
-     *
-     * @field
-     */
-    private $make;
-    
-    /**
-     *
-     * @field
-     */
-    private $model;
-    
-    /**
-     *
-     * @field
-     */
-    private $year;
-    
-    /**
-     *
-     * @field
-     */
-    private $count = 0;
-    
-    public function __construct($make, $model, $year)
+    public function __construct($color)
     {
-        parent::__construct($make.'_'.$model.'_'.$year);
-
-        $this->make = $make;
-        
-        $this->model = $model;
-        
-        $this->year = $year;
+        parent::__construct(4, $color);
     }
 }
 
-echo '<pre>';
-
-function create()
+class Motorcycle
+    extends Automobile
 {
-    $server = Chemisus\ODM\Server::Factory('localhost:5984');
-
-    $server->deleteDatabase('db');
-
-    $server->createDatabase('db');
-
-    $database = $server->getDatabase('db');
-    
-    $database->createDocument(new Car('hyundai', 'elantra', '06'));
+    public function __construct($color)
+    {
+        parent::__construct(2, $color);
+    }
 }
 
-function update()
-{
-    $server = Chemisus\ODM\Server::Factory('localhost:5984');
+$server = Chemisus\ODM\Server::Factory('localhost:5984');
 
-    $database = $server->getDatabase('db');
+$database = $server->getDatabase('db');
 
-    $document = $database->getDocument('hyundai_elantra_06');
+$database->createDocument(new Car('red'));
 
-    $document->blah += 1;
-    
-    $database->updateDocument($document);
-}
-
-function fetch()
-{
-    $server = Chemisus\ODM\Server::Factory('localhost:5984');
-
-    $database = $server->getDatabase('db');
-    
-    $document = $database->getDocument('hyundai_elantra_06');
-    
-    print_r($document);
-}
-
-update();
-
-fetch();
-
-echo '</pre>';
+$database->createDocument(new Motorcycle('black'));
