@@ -416,7 +416,7 @@ class Document
              * if the field name is _rev, and its null, then we dont want to
              * save it.
              */
-            if ($key === '_rev')
+            if ($key === '_id' || $key === '_rev')
             {
                 if ($field instanceof \ReflectionMethod && $field->invoke($value) === null)
                 {
