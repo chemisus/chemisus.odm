@@ -113,6 +113,11 @@ class Server
         return $this->connection->delete($name);
     }
     
+    /**
+     *
+     * @param string $name
+     * @return Database
+     */
     public function getDatabase($name)
     {
         return Database::Factory($this->address, $name);
