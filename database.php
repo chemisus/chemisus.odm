@@ -24,17 +24,40 @@ class Database
     /* \********************************************************************\ */
     private static $Databases = array();
 
+    private static $Default;
+    
     /* \********************************************************************\ */
     /* \                            STATIC METHODS                          \ */
     /* \********************************************************************\ */
-    public static function Factory($server, $database)
+    /**
+     *
+     * @param type $server
+     * @param type $database
+     * @param type $default
+     * @return Database
+     */
+    public static function Factory($server, $database, $default=false)
     {
         if (!isset(self::$Databases[$server.'/'.$database]))
         {
             self::$Databases[$server.'/'.$database] = new Database($server, $database);
         }
         
+        if ($default)
+        {
+            self::$Default = $server.'/'.$database;
+        }
+        
         return self::$Databases[$server.'/'.$database];
+    }
+    
+    /**
+     *
+     * @return Database
+     */
+    public static function Current()
+    {
+        return self::$Databases[self::$Default];
     }
 
     /* \********************************************************************\ */
