@@ -213,8 +213,6 @@ class Document
                     continue;
                 }
                 
-                echo $method->getName();
-                
                 $doc = $method->getDocComment();
 
                 $matches = array();
@@ -223,7 +221,7 @@ class Document
                 {
                     continue;
                 }
-
+                
                 $name = $method->getName();
 
                 if (count($matches) > 1)
