@@ -47,16 +47,37 @@ class Automobile
     /**
      *
      * @var string
+     * @field _rev
+     */
+    private $_rev;
+
+    /**
+     * 
+     * @var string
      * @field _id
      */
-    private $_id;
+    private $license;
     
     /**
      *
      * @var string
-     * @field _rev
+     * @field
      */
-    private $_rev;
+    private $make;
+    
+    /**
+     *
+     * @var string
+     * @field
+     */
+    private $model;
+    
+    /**
+     *
+     * @var int
+     * @field
+     */
+    private $year;
     
     /**
      *
@@ -72,8 +93,16 @@ class Automobile
      */
     private $color;
     
-    public function __construct($wheels, $color)
+    public function __construct($license, $make, $model, $year, $wheels, $color)
     {
+        $this->make = $make;
+        
+        $this->model = $model;
+        
+        $this->year = $year;
+        
+        $this->license = $license;
+        
         $this->wheels = $wheels;
         
         $this->color = $color;
@@ -83,25 +112,29 @@ class Automobile
 class Car
     extends Automobile
 {
-    public function __construct($color)
+    public function __construct($license, $make, $model, $year, $color)
     {
-        parent::__construct(4, $color);
+        parent::__construct($license, $make, $model, $year, 4, $color);
     }
 }
 
 class Motorcycle
     extends Automobile
 {
-    public function __construct($color)
+    public function __construct($license, $make, $model, $year, $color)
     {
-        parent::__construct(2, $color);
+        parent::__construct($make, $model, $year, 2, $color);
     }
 }
 
 $server = Chemisus\ODM\Server::Factory('localhost:5984');
 
+$server->deleteDatabase('db');
+
+$server->createDatabase('db');
+
 $database = $server->getDatabase('db');
 
-$database->createDocument(new Car('red'));
+$database->createDocument(new Car('HYZ 778', 'Toyota', 'Echo', '2002', 'Silver'));
 
-$database->createDocument(new Motorcycle('black'));
+$car = $database->getDocument('HYZ 778');
