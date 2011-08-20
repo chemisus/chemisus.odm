@@ -55,40 +55,36 @@ class Document
         return $unserialized;
     }
     
-    public static function Convert($value)
+    public static function Convert($data)
     {
-        if (is_object($value))
+        if (is_object($data))
         {
-            return self::Factory($value)->toDocument($value);
+            return self::Factory($data)->toDocument($data);
         }
-        else if (is_array($value))
+        else if (is_array($data))
         {
             $array = array();
-
-            foreach ($value as $key=>$value)
+            
+            foreach ($data as $key=>$value)
             {
                 $array[$key] = self::Convert($value);
             }
 
             return $array;
         }
-        else if (is_null($value))
-        {
-            return $value;
-        }
         else
         {
-            return $value;
+            return $data;
         }
     }
     
-    public static function Revert($value)
+    public static function Revert($data)
     {
-        if (is_array($value) && isset($value[self::OBJECT]))
+        if (is_array($data) && isset($data[self::OBJECT]))
         {
             return self::Factory($data[self::OBJECT])->fromDocument($data);
         }
-        else if (is_array($value))
+        else if (is_array($data))
         {
             $array = array();
 
@@ -101,7 +97,7 @@ class Document
         }
         else
         {
-            return $value;
+            return $data;
         }
     }
 
@@ -281,6 +277,10 @@ class Document
             {
                 unset($this->properties[$key]);
             }
+            else if ($value->isStatic())
+            {
+                unset($this->properties[$key]);
+            }
         }
     }
 
@@ -352,7 +352,7 @@ class Document
         {
             $method->setAccessible(true);
             
-            $array[self::BASE][$this->class->getName()][self::METHOD.$method->getName()] = self::Convert($method->invoke($value));
+            //$array[self::BASE][$this->class->getName()][self::METHOD.$method->getName()] = self::Convert($method->invoke($value));
         }
 
         /**
@@ -380,7 +380,7 @@ class Document
              */
             foreach ($parent->methods as $method)
             {
-                $array[self::BASE][$parent->class->getName()][self::METHOD.$method->getName()] = self::Convert($method->invoke($value));
+                //$array[self::BASE][$parent->class->getName()][self::METHOD.$method->getName()] = self::Convert($method->invoke($value));
             }
         }
 
@@ -400,7 +400,8 @@ class Document
                 {
                     continue;
                 }
-                else if ($field instanceof \ReflectionProperty && $field->getValue($value) === null)
+                
+                if ($field instanceof \ReflectionProperty && $field->getValue($value) === null)
                 {
                     continue;
                 }
