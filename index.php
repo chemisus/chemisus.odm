@@ -194,6 +194,7 @@ class Motorcycle
         parent::__construct($make, $model, $year, 2, $color);
     }
 }
+echo '<pre>';
 
 $server = Chemisus\ODM\Server::Factory('localhost:5984');
 
@@ -207,9 +208,10 @@ $model = \Chemisus\ODM\Model::Factory('Car');
 
 $model->install();
 
-$car = new Car('ABC 123', 'Toyota', 'Echo', '2002', 'Silver');
-
-$database->createDocument($car);
+$database->createDocument(new Car('ABC 123', 'Toyota', 'Echo', '2002', 'Silver'));
+$database->createDocument(new Car('DEF 456', 'Hyundai', 'Elantra', '2004', 'Red'));
+$database->createDocument(new Car('GHI 789', 'Chevrolet', 'Camaro', '2007', 'Black'));
+$database->createDocument(new Car('JKL 147', 'Jeep', 'Range Rover', '2009', 'Blue'));
 
 $view = $database->getView('Car', 'all');
 
@@ -220,6 +222,9 @@ foreach ($view as $key=>$value)
     $database->updateDocument($value['value']);
 }
 
-echo '<pre>';
+$view = $database->getView('Car', 'count');
+
+
 
 print_r($view);
+/**/
