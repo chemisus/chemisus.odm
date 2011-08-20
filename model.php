@@ -135,14 +135,30 @@ class Model
         
         $this->views['all'] = array(
             'map' => "
-            function (doc) {
-                for (class in doc.{$base}) {
-                    if (class == 'Car') {
-                        emit(class, doc);
-                        break;
+                function (doc) {
+                    for (class in doc.{$base}) {
+                        if (class == 'Car') {
+                            emit(class, doc);
+                            break;
+                        }
                     }
-                }
-            }",
+                }",
+        );
+
+        $this->views['count'] = array(
+            'map' => "
+                function (doc) {
+                    for (class in doc.{$base}) {
+                        if (class == 'Car') {
+                            emit(class, doc);
+                            break;
+                        }
+                    }
+                }",
+            'reduce' => "
+                function (keys, values) {
+                    return values.length;
+                }",
         );
     }
 
