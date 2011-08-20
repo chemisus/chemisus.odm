@@ -119,6 +119,13 @@ class Database
         return Document::Revert($transaction['response']['body']);
     }
 
+    public function getView($view, $function)
+    {
+        $transaction = $this->getServer()->getConnection()->get($this->database.'/_design/'.$view.'/_view/'.$function);
+        
+        return new View(Document::Revert($transaction['response']['body']));
+    }
+
     public function updateDocument($value)
     {
         $transaction = $this->tryUpdateDocument($value);
