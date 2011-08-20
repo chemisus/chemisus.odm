@@ -54,42 +54,42 @@ class Automobile
     /**
      * 
      * @var string
-     * @field _id
      */
     private $license;
     
     /**
      *
      * @var string
-     * @field
      */
     private $make;
     
     /**
      *
      * @var string
-     * @field
      */
     private $model;
     
     /**
      *
      * @var int
-     * @field
      */
     private $year;
     
     /**
      *
      * @var string
-     * @field
      */
     private $wheels;
+    
+    /**
+     * 
+     * @var int
+     */
+    private $miles = 0;
 
     /**
      *
      * @var string
-     * @field
      */
     private $color;
     
@@ -106,6 +106,74 @@ class Automobile
         $this->wheels = $wheels;
         
         $this->color = $color;
+    }
+
+    /**
+     * @field _id
+     * @return string
+     */
+    public function getLicense()
+    {
+        return $this->license;
+    }
+    
+    /**
+     * @field make
+     * @return string
+     */
+    public function getMake()
+    {
+        return $this->make;
+    }
+    
+    /**
+     * @field model
+     * @return string
+     */
+    public function getModel()
+    {
+        return $this->model;
+    }
+    
+    /**
+     * @field year
+     * @return string
+     */
+    public function getYear()
+    {
+        return $this->year;
+    }
+    
+    /**
+     * @field color
+     * @return string
+     */
+    public function getColor()
+    {
+        return $this->color;
+    }
+
+    /**
+     * @field miles
+     * @return int
+     */
+    public function getMiles()
+    {
+        return $this->miles;
+    }
+    
+    /**
+     * @field wheels
+     * @return string
+     */
+    public function getWheels()
+    {
+        return $this->wheels;
+    }
+    
+    public function addMiles($miles)
+    {
+        $this->miles += $miles;
     }
 }
 
@@ -133,8 +201,25 @@ $server->deleteDatabase('db');
 
 $server->createDatabase('db');
 
-$database = $server->getDatabase('db');
+$database = \Chemisus\ODM\Database::Factory('localhost:5984', 'db', true);
 
-$database->createDocument(new Car('HYZ 778', 'Toyota', 'Echo', '2002', 'Silver'));
+$model = \Chemisus\ODM\Model::Factory('Car');
 
-$car = $database->getDocument('HYZ 778');
+$model->install();
+
+$car = new Car('ABC 123', 'Toyota', 'Echo', '2002', 'Silver');
+
+$database->createDocument($car);
+
+$view = $database->getView('Car', 'all');
+
+foreach ($view as $key=>$value)
+{
+    $value['value']->addMiles(25);
+    
+    $database->updateDocument($value['value']);
+}
+
+echo '<pre>';
+
+print_r($view);
