@@ -89,6 +89,8 @@ class Database
     
     public function getDocument($id)
     {
+        $id = urlencode($id);
+        
         $transaction = $this->getServer()->getConnection()->get($this->database.'/'.$id);
         
         return Document::Revert($transaction['response']['body']);
