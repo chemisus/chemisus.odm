@@ -31,19 +31,19 @@ class Document
     /* \********************************************************************\ */
     /* \                            STATIC METHODS                          \ */
     /* \********************************************************************\ */
-    public static function Factory($value)
+    public static function Factory($class)
     {
-        if (is_object($value))
+        if (is_object($class))
         {
-            $value = get_class($value);
+            $class = get_class($class);
         }
         
-        if (!isset(self::$Documents[$value]))
+        if (!isset(self::$Documents[$class]))
         {
-            self::$Documents[$value] = new Document($value);
+            self::$Documents[$class] = new Document($class);
         }
         
-        return self::$Documents[$value];
+        return self::$Documents[$class];
     }
 
     public static function Prototype($class)
@@ -59,11 +59,18 @@ class Document
     {
         if (is_object($value))
         {
-            return self::ConvertObject($value);
+            return self::Factory($value)->toDocument($value);
         }
         else if (is_array($value))
         {
-            return self::ConvertArray($value);
+            $array = array();
+
+            foreach ($value as $key=>$value)
+            {
+                $array[$key] = self::Convert($value);
+            }
+
+            return $array;
         }
         else if (is_null($value))
         {
@@ -75,54 +82,27 @@ class Document
         }
     }
     
-    protected static function ConvertObject($value)
-    {
-        return self::Factory($value)->toDocument($value);
-    }
-    
-    protected static function ConverArray($value)
-    {
-        $array = array();
-        
-        foreach ($value as $key=>$value)
-        {
-            $array[$key] = self::Convert($value);
-        }
-        
-        return $array;
-    }
-    
     public static function Revert($value)
     {
         if (is_array($value) && isset($value[self::OBJECT]))
         {
-            return self::RevertObject($value);
+            return self::Factory($data[self::OBJECT])->fromDocument($data);
         }
         else if (is_array($value))
         {
-            return self::RevertArray($value);
+            $array = array();
+
+            foreach ($data as $key=>$value)
+            {
+                $array[$key] = self::Revert($value);
+            }
+
+            return $array;
         }
         else
         {
             return $value;
         }
-    }
-    
-    public static function RevertObject($data)
-    {
-        return self::Factory($data[self::OBJECT])->fromDocument($data);
-    }
-    
-    public static function RevertArray($data)
-    {
-        $array = array();
-        
-        foreach ($data as $key=>$value)
-        {
-            $array[$key] = self::Revert($value);
-        }
-        
-        return $array;
     }
 
     /* \********************************************************************\ */
@@ -471,7 +451,7 @@ class Document
             
             $field->setValue($object, self::Revert($data[$key]));
         }
-            
+
         return $object;
     }
 }
