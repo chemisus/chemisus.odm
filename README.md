@@ -1,4 +1,4 @@
-chemisus.odm
+Snuggie
 ============
 
 PHP Object Document Mapper (ODM) for [CouchDB](http://couchdb.apache.org/).
@@ -13,14 +13,14 @@ will come from the data that is saved at the time of creation. It is up to the
 developer to make sure that some form of structure is kept. CouchDB stores each
 document as a JSON object.
 
-What chemisus.odm will attempt to do is make it easier for the developer to
+What Snuggie will attempt to do is make it easier for the developer to
 store and retrieve these documents. If the document happens to be a PHP object,
-then chemisus.odm will automatically "serialize" and "unserialize" the object to
+then Snuggie will automatically "serialize" and "unserialize" the object to
 and from a JSON object. Quotes are on serialize and unseralize, because these
 processes are different then just calling php's serialize() and unseralize()
 functions, which return a string that is hard to read and even harder to manipulate.
 
-How chemisus.odm serializes differently than PHP is that it first creates an
+How Snuggie serializes differently than PHP is that it first creates an
 array with at least two key value set to the class name of the object. These keys
 have unique names "$$object" and "$$base". $$object is a string value representing
 the class name of the object being saved. $$base is an array value, where each key
@@ -133,7 +133,7 @@ top level of the JSON object.
 
 Requirements
 ------------
-chemisus.odm so far has the following requirements:
+Snuggie so far has the following requirements:
 
 * PHP 5.3 (namespaces)
 * php5-curl installed (connections)
@@ -143,7 +143,7 @@ Installing
 
 For the moment, there really isn't any sort of installation
 process. Just include odm.php where appropriate, and it
-will include the files necessary for chemisus.odm.
+will include the files necessary for Snuggie.
 
 To include odm:
 
@@ -152,14 +152,14 @@ To include odm:
 Classes
 -------
 
-There are currently four main objects in chemisus.odm:
+There are currently four main objects in Snuggie:
 
 * \Chemisus\ODM\Connection
 * \Chemisus\ODM\Server
 * \Chemisus\ODM\Database
 * \Chemisus\ODM\Document
 
-To actually use chemisus.odm, you really only need to interact
+To actually use Snuggie, you really only need to interact
 with the server and database. The server will handle the connections,
 and the database will handle the documents.
 
