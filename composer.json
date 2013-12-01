@@ -1,0 +1,20 @@
+{
+    "name": "chemisus/snuggie",
+    "description": "CouchDB ODM",
+    "minimum-stability": "dev",
+    "authors": [
+        {
+            "name": "Terrence Howard",
+            "email": "chemisus@gmail.com"
+        }
+    ],
+    "requires-dev": {
+        "phpunit/phpunit": "*",
+        "mockery/mockery": "*"
+    },
+    "autoload": {
+        "psr-0": {
+            "Snuggie": "src/Snuggie"
+        }
+    }
+}
