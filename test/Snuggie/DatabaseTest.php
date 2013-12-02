@@ -107,6 +107,25 @@ class DatabaseTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testInsertDocument
      */
+    public function testGetDocument()
+    {
+        $value = [
+            'a' => 'A',
+            'b' => 'B',
+        ];
+
+        $response = Response::Factory($this->database->insertDocument('test-doc', $value));
+
+        $json = json_decode($response->body());
+
+        $actual = $this->database->getDocument('test-doc');
+
+        $this->assertEquals('A', $actual->a);
+    }
+
+    /**
+     * @depends testInsertDocument
+     */
     public function testUpdateDocument()
     {
         $value = [

@@ -59,4 +59,9 @@ class Database
     {
         return $this->server->connection()->delete('/' . $this->name . '/' . $id . '?rev=' . $revision, true);
     }
+
+    public function getDocument($id)
+    {
+        return json_decode(Response::Factory($this->server->connection()->get('/' . $this->name . '/' . $id, true))->body());
+    }
 }
