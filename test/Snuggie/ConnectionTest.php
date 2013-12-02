@@ -21,6 +21,13 @@ class ConnectionTest extends PHPUnit_Framework_TestCase
         $this->connection = new Connection($host, $port);
     }
 
+    public function tearDown()
+    {
+        parent::tearDown();
+
+        $this->connection->delete('db-test', json_encode(null));
+    }
+
     public function testGet()
     {
         $url    = '/';

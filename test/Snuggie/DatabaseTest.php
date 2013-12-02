@@ -2,19 +2,27 @@
 
 namespace Test\Snuggie;
 
-
 use PHPUnit_Framework_TestCase;
 use Snuggie\Connection;
+use Snuggie\Database;
 use Snuggie\Server;
 
-class ServerTest extends PHPUnit_Framework_TestCase
+class DatabaseTest extends PHPUnit_Framework_TestCase
 {
+    /**
+     * @var Connection
+     */
     private $connection;
 
     /**
      * @var Server
      */
     private $server;
+
+    /**
+     * @var Database
+     */
+    private $database;
 
     public function setUp()
     {
@@ -24,6 +32,9 @@ class ServerTest extends PHPUnit_Framework_TestCase
         $port             = 5984;
         $this->connection = new Connection($host, $port);
         $this->server     = new Server($this->connection);
+        $this->database   = new Database($this->server, 'db-test');
+
+        $this->server->createDatabase('db-test');
     }
 
     public function tearDown()
@@ -33,26 +44,4 @@ class ServerTest extends PHPUnit_Framework_TestCase
         $this->connection->delete('db-test', json_encode(null));
     }
 
-    public function testCreateDatabase()
-    {
-        $this->server->createDatabase('test-db');
-    }
-
-    /**
-     * @depends testCreateDatabase
-     */
-    public function testHasDatabase()
-    {
-        $this->server->createDatabase('test-db');
-        $this->server->hasDatabase('test-db');
-    }
-
-    /**
-     * @depends testCreateDatabase
-     */
-    public function testDeleteDatabase()
-    {
-        $this->server->createDatabase('test-db');
-        $this->server->deleteDatabase('test-db');
-    }
 }

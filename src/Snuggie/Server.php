@@ -11,18 +11,23 @@ class Server
         $this->connection = $connection;
     }
 
+    public function connection()
+    {
+        return $this->connection;
+    }
+
     public function createDatabase($name)
     {
-        $this->connection->put('/' . $name);
+        return $this->connection->put('/' . $name);
     }
 
     public function hasDatabase($name)
     {
-        $this->connection->get('/' . $name);
+        return $this->connection->get('/' . $name);
     }
 
     public function deleteDatabase($name)
     {
-        $this->connection->delete('/' . $name);
+        return $this->connection->delete('/' . $name);
     }
 }
