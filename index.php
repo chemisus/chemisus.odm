@@ -191,20 +191,20 @@ class Motorcycle
 {
     public function __construct($license, $make, $model, $year, $color)
     {
-        parent::__construct($make, $model, $year, 2, $color);
+        parent::__construct($license, $make, $model, $year, 2, $color);
     }
 }
 echo '<pre>';
 
-$server = Chemisus\ODM\Server::Factory('localhost:5984');
+$server = \Snuggie\Server::Factory('localhost:5984');
 
 $server->deleteDatabase('db');
 
 $server->createDatabase('db');
 
-$database = \Chemisus\ODM\Database::Factory('localhost:5984', 'db', true);
+$database = \Snuggie\Database::Factory('localhost:5984', 'db', true);
 
-$model = \Chemisus\ODM\Model::Factory('Car');
+$model = \Snuggie\Model::Factory('Car');
 
 $model->install();
 

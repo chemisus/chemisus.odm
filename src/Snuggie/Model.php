@@ -2,15 +2,15 @@
 
 /**
  * @author Terrence Howard <chemisus@gmail.com>
- * @package chemisus.odm
+ * @package snuggie
  * @copyright 2011 Terrence Howard
  */
 
-namespace Chemisus\ODM;
+namespace Snuggie;
 
 /**
  * @author Terrence Howard <chemisus@gmail.com>
- * @package chemisus.odm
+ * @package snuggie
  */
 class Model
 {
@@ -131,7 +131,7 @@ class Model
     {
         $this->class = $class;
         
-        $base = \Chemisus\ODM\Document::BASE;
+        $base = \Snuggie\Document::BASE;
         
         $this->views['all'] = array(
             'map' => "
