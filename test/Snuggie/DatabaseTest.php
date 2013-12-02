@@ -146,4 +146,66 @@ class DatabaseTest extends PHPUnit_Framework_TestCase
 
         $this->assertTrue(strpos($response->body(), '"rev":"2-') !== false);
     }
+
+    public function testInsertView()
+    {
+        $view = [
+            'views' => [
+                'all' => [
+                    'map' => 'function (doc) {emit(null, doc._id);}'
+                ]
+            ]
+        ];
+
+        $this->database->insertView('test-view', $view);
+
+        $this->assertTrue($this->database->hasDocument('_design/test-view'));
+    }
+
+    /**
+     * @depends testInsertView
+     */
+    public function testHasView()
+    {
+        $view = [
+            'views' => [
+                'all' => [
+                    'map' => 'function (doc) {emit(null, doc._id);}'
+                ]
+            ]
+        ];
+
+        $this->database->insertView('test-view', $view);
+
+        $this->assertTrue($this->database->hasView('test-view'));
+    }
+
+    public function testHasNotView()
+    {
+        $this->assertFalse($this->database->hasView('asdfasdfasdf'));
+    }
+
+    public function testRunView()
+    {
+        $view = [
+            'views' => [
+                'all' => [
+                    'map' => 'function (doc) {emit(null, doc._id);}'
+                ]
+            ]
+        ];
+
+        $value = [
+            'a' => 'A',
+            'b' => 'B',
+        ];
+
+        $this->database->insertDocument('test-doc1', $value);
+        $this->database->insertDocument('test-doc2', $value);
+        $this->database->insertDocument('test-doc3', $value);
+        $this->database->insertView('test-view', $view);
+        $response = $this->database->runView('test-view', 'all');
+
+        $this->assertEquals(3, $response->total_rows);
+    }
 }

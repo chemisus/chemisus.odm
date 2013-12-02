@@ -17,16 +17,21 @@ class Database
     {
         if ($object instanceof \stdClass) {
             $object->{$key} = $value;
-        } else if (is_array($object)) {
-            $object[$key] = $value;
+        } else {
+            if (is_array($object)) {
+                $object[$key] = $value;
+            }
         }
     }
 
-    public function getValue($object, $key) {
+    public function getValue($object, $key)
+    {
         if ($object instanceof \stdClass) {
             return $object->{$key};
-        } else if (is_array($object)) {
-            return $object[$key];
+        } else {
+            if (is_array($object)) {
+                return $object[$key];
+            }
         }
     }
 
@@ -62,6 +67,23 @@ class Database
 
     public function getDocument($id)
     {
-        return json_decode(Response::Factory($this->server->connection()->get('/' . $this->name . '/' . $id, true))->body());
+        return json_decode(
+            Response::Factory($this->server->connection()->get('/' . $this->name . '/' . $id, true))->body()
+        );
+    }
+
+    public function insertView($id, $value)
+    {
+        return $this->server->connection()->put('/' . $this->name . '/_design/' . $id, json_encode($value), true);
+    }
+
+    public function hasView($id)
+    {
+        return $this->hasDocument('_design/' . $id);
+    }
+
+    public function runView($id, $method)
+    {
+        return $this->getDocument('_design/' . $id . '/_view/' . $method);
     }
 }
