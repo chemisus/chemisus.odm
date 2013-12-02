@@ -70,6 +70,25 @@ class Connection
 
     /**
      * @param $url
+     * @param bool $return_headers
+     * @return string
+     */
+    public function head($url, $return_headers = false)
+    {
+        return $this->request(
+            [
+                CURLOPT_RETURNTRANSFER => 1,
+                CURLOPT_HEADER         => $return_headers,
+                CURLOPT_CUSTOMREQUEST  => 'HEAD',
+                CURLOPT_PORT           => $this->port,
+                CURLOPT_URL            => $this->host . $url,
+                CURLOPT_HTTPHEADER     => ['Connection: close']
+            ]
+        );
+    }
+
+    /**
+     * @param $url
      * @param null $value
      * @param bool $return_headers
      * @param string $content_type

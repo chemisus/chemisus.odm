@@ -30,7 +30,7 @@ class ServerTest extends PHPUnit_Framework_TestCase
     {
         parent::tearDown();
 
-        $this->connection->delete('db-test', json_encode(null));
+        $this->connection->delete('/db-test');
     }
 
     public function testCreateDatabase()
@@ -44,15 +44,17 @@ class ServerTest extends PHPUnit_Framework_TestCase
     public function testHasDatabase()
     {
         $this->server->createDatabase('test-db');
-        $this->server->hasDatabase('test-db');
+        $this->assertTrue($this->server->hasDatabase('test-db'));
     }
 
     /**
      * @depends testCreateDatabase
+     * @depends testHasDatabase
      */
     public function testDeleteDatabase()
     {
         $this->server->createDatabase('test-db');
         $this->server->deleteDatabase('test-db');
+        $this->assertFalse($this->server->hasDatabase('test-db'));
     }
 }

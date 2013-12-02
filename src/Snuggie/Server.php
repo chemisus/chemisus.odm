@@ -23,7 +23,7 @@ class Server
 
     public function hasDatabase($name)
     {
-        return $this->connection->get('/' . $name);
+        return $this->connection->get('/' . $name) !== '{"error":"not_found","reason":"no_db_file"}' . "\n";
     }
 
     public function deleteDatabase($name)

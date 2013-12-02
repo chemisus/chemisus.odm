@@ -25,7 +25,7 @@ class ConnectionTest extends PHPUnit_Framework_TestCase
     {
         parent::tearDown();
 
-        $this->connection->delete('db-test', json_encode(null));
+        $this->connection->delete('db-test');
     }
 
     public function testGet()
@@ -35,13 +35,20 @@ class ConnectionTest extends PHPUnit_Framework_TestCase
         $this->assertNotEquals(false, $actual);
     }
 
+    public function testHead()
+    {
+        $url    = '/';
+        $actual = $this->connection->head($url, true);
+        $this->assertNotEquals(false, $actual);
+    }
+
     /**
      * @depends testGet
      */
     public function testPut()
     {
         $url    = '/test-db';
-        $json = $this->connection->put($url);
+        $json   = $this->connection->put($url);
         $actual = json_decode($json);
         $this->assertTrue($actual->ok);
     }
@@ -51,11 +58,11 @@ class ConnectionTest extends PHPUnit_Framework_TestCase
      */
     public function testPost()
     {
-        $object = new \stdClass();
+        $object    = new \stdClass();
         $object->a = 'hi';
 
         $url    = '/test-db';
-        $json = $this->connection->post($url, json_encode($object));
+        $json   = $this->connection->post($url, json_encode($object));
         $actual = json_decode($json);
         $this->assertTrue($actual->ok);
     }
@@ -66,7 +73,7 @@ class ConnectionTest extends PHPUnit_Framework_TestCase
     public function testDelete()
     {
         $url    = '/test-db';
-        $json = $this->connection->delete($url, json_encode(null));
+        $json   = $this->connection->delete($url, json_encode(null));
         $actual = json_decode($json);
         $this->assertTrue($actual->ok);
     }

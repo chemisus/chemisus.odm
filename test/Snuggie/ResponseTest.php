@@ -11,13 +11,13 @@ class ResponseTest extends PHPUnit_Framework_TestCase
 
     public function testFactory()
     {
-        $data = 'HTTP/1.1 200 OK' . "\n" .
-            'Date: Thu, 17 Aug 2006 05:39:28 +0000GMT' . "\n" .
-            'Content-Length: 67' . "\n" .
-            'Content-Type: application/json' . "\n" .
-            'Connection: close' . "\n" .
-            '' . "\n" .
-            '{"ok": true}';
+        $data = 'HTTP/1.1 200 OK' . "\r\n" .
+            'Date: Thu, 17 Aug 2006 05:39:28 +0000GMT' . "\r\n" .
+            'Content-Length: 67' . "\r\n" .
+            'Content-Type: application/json' . "\r\n" .
+            'Connection: close' . "\r\n" .
+            '' . "\r\n" .
+            '{"ok": true}'. "\n";
 
         $response = Response::Factory($data);
 
@@ -34,6 +34,6 @@ class ResponseTest extends PHPUnit_Framework_TestCase
             ],
             $response->headers()
         );
-        $this->assertEquals('{"ok": true}', $response->body());
+        $this->assertEquals('{"ok": true}'. "\n", $response->body());
     }
 }

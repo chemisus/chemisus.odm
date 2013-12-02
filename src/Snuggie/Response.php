@@ -6,21 +6,22 @@ class Response
 {
     public static function Factory($response)
     {
-        $data = explode("\n\n", $response, 2);
-        $header = explode("\n", $data[0]);
-        $information = array_shift($header);
-        $details = [];
+        $data         = explode("\r\n\r\n", $response, 2);
+        $header       = array_shift($data);
+        $body         = array_shift($data);
+        $header_lines = explode("\r\n", $header);
+        $information  = array_shift($header_lines);
+        $details      = [];
 
-        preg_match('/([^\/]+)\/(\S+)\s+(\S+)\s+(.*)/', $information, $details);
+        preg_match('/([^\/]+)\/(\S+)\s+(\S+)\s+(.*?)\r?\n?$/', $information, $details);
 
         $protocol = $details[1];
         $version  = $details[2];
         $status   = $details[3];
         $message  = $details[4];
-        $body     = $data[1];
 
-        $headers  = [];
-        foreach ($header as $line) {
+        $headers = [];
+        foreach ($header_lines as $line) {
             $value = explode(': ', $line);
 
             $headers[$value[0]] = $value[1];
