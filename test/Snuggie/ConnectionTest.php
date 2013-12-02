@@ -25,7 +25,7 @@ class ConnectionTest extends PHPUnit_Framework_TestCase
     {
         parent::tearDown();
 
-        $this->connection->delete('db-test');
+        $this->connection->delete('/db-test');
     }
 
     public function testGet()
