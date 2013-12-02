@@ -98,9 +98,33 @@ class DatabaseTest extends PHPUnit_Framework_TestCase
 
         $response = Response::Factory($this->database->insertDocument('test-doc', $value));
 
+        $json = json_decode($response->body());
+
+        $this->database->deleteDocument('test-doc', $json->rev);
+        $this->assertFalse($this->database->hasDocument('test-doc'));
+    }
+
+    /**
+     * @depends testInsertDocument
+     */
+    public function testUpdateDocument()
+    {
+        $value = [
+            'a' => 'A',
+            'b' => 'B',
+        ];
+
+        $response = Response::Factory($this->database->insertDocument('test-doc', $value));
+
         $value = json_decode($response->body());
 
-        $this->database->deleteDocument('test-doc', $value->rev);
-        $this->assertFalse($this->database->hasDocument('test-doc'));
+        $updated = [
+            'c' => 'C',
+            'd' => 'D',
+        ];
+
+        $response = Response::Factory($this->database->updateDocument('test-doc', $value->rev, $updated));
+
+        $this->assertTrue(strpos($response->body(), '"rev":"2-') !== false);
     }
 }
