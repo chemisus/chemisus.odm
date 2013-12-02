@@ -1,0 +1,13 @@
+{
+    "require": {
+    },
+    "require-dev": {
+        "phpunit/phpunit": "*",
+        "mockery/mockery": "*"
+    },
+    "autoload": {
+        "psr-0": {
+            "Snuggie": "src/"
+        }
+    }
+}
