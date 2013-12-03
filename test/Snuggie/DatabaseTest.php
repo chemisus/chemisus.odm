@@ -190,21 +190,16 @@ class DatabaseTest extends PHPUnit_Framework_TestCase
         $view = [
             'views' => [
                 'all' => [
-                    'map' => 'function (doc) {emit(null, doc._id);}'
+                    'map' => 'function (doc) {emit(null, doc.x);}'
                 ]
             ]
         ];
 
-        $value = [
-            'a' => 'A',
-            'b' => 'B',
-        ];
-
-        $this->database->insertDocument('test-doc1', $value);
-        $this->database->insertDocument('test-doc2', $value);
-        $this->database->insertDocument('test-doc3', $value);
+        $this->database->insertDocument('test-doc1', ['x' => 'A']);
+        $this->database->insertDocument('test-doc2', ['x' => 'B']);
+        $this->database->insertDocument('test-doc3', ['x' => 'C']);
         $this->database->insertView('test-view', $view);
-        $response = $this->database->runView('test-view', 'all');
+        $response = $this->database->runView('test-view', 'all', ['B', 'C']);
 
         $this->assertEquals(3, $response->total_rows);
     }

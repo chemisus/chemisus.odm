@@ -82,8 +82,12 @@ class Database
         return $this->hasDocument('_design/' . $id);
     }
 
-    public function runView($id, $method)
+    public function runView($id, $method, $keys)
     {
-        return $this->getDocument('_design/' . $id . '/_view/' . $method);
+        foreach ($keys as $key=>$value) {
+            $keys[$key] = urlencode(json_encode($value));
+        }
+
+        return $this->getDocument('_design/' . $id . '/_view/' . $method . '?keys=%5B' . implode(',', $keys) . '%5D');
     }
 }
