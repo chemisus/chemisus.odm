@@ -88,6 +88,6 @@ class Database
             $keys[$key] = urlencode(json_encode($value));
         }
 
-        return $this->getDocument('_design/' . $id . '/_view/' . $method . '?keys=%5B' . implode(',', $keys) . '%5D');
+        return $this->getDocument('_design/' . $id . '/_view/' . $method . '?keys=[' . implode(',', $keys) . ']');
     }
 }

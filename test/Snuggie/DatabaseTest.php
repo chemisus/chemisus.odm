@@ -190,7 +190,7 @@ class DatabaseTest extends PHPUnit_Framework_TestCase
         $view = [
             'views' => [
                 'all' => [
-                    'map' => 'function (doc) {emit(null, doc.x);}'
+                    'map' => 'function (doc) {emit(doc.x, null);}'
                 ]
             ]
         ];
@@ -201,6 +201,6 @@ class DatabaseTest extends PHPUnit_Framework_TestCase
         $this->database->insertView('test-view', $view);
         $response = $this->database->runView('test-view', 'all', ['B', 'C']);
 
-        $this->assertEquals(3, $response->total_rows);
+        $this->assertEquals(2, count($response->rows));
     }
 }
