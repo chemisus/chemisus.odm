@@ -72,6 +72,13 @@ class Database
         );
     }
 
+    public function allDocuments()
+    {
+        return json_decode(
+            Response::Factory($this->server->connection()->get('/' . $this->name . '/_all_docs', true))->body()
+        );
+    }
+
     public function insertView($id, $value)
     {
         return $this->server->connection()->put('/' . $this->name . '/_design/' . $id, json_encode($value), true);
