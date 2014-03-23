@@ -40,6 +40,11 @@ class Database
     private $create_attachment;
 
     /**
+     * @var IdGenerator
+     */
+    private $id_generator;
+
+    /**
      * @param Connection $connection
      * @param Uploader $uploader
      * @param string $database
@@ -55,6 +60,7 @@ class Database
         $this->get_document = $this->option($options, 'get_document', new GetDocument($this->response_factory));
         $this->create_document = $this->option($options, 'create_document', new CreateDocument($this->response_factory));
         $this->create_attachment = $this->option($options, 'create_attachment', new CreateAttachment($this->response_factory));
+        $this->id_generator = $this->option($options, 'id_generator', new IdGenerator($this->response_factory));
     }
 
     public function option($options, $key, $otherwise)
@@ -75,5 +81,15 @@ class Database
     public function createAttachment($id, $revision, $name, $file)
     {
         return $this->create_attachment->createAttachment($this->uploader, $this->database, $id, $revision, $name, $file);
+    }
+
+    public function generateId()
+    {
+        return $this->id_generator->generateId($this->connection);
+    }
+
+    public function generateIds($count = 1)
+    {
+        return $this->id_generator->generateIds($this->connection, $count);
     }
 }
