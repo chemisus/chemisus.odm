@@ -1,0 +1,17 @@
+{
+    "name": "chemisus/snuggie",
+    "authors": [
+        {
+            "name": "Terrence Howard",
+            "email": "chemisus@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-0": {
+            "Snuggie": "src/"
+        }
+    },
+    "require": {
+        "phpunit/phpunit": "*"
+    }
+}
