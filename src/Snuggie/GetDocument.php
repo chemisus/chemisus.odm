@@ -2,8 +2,11 @@
 
 namespace Snuggie;
 
-use Exception;
-
+/**
+ * Class GetDocument provides a method of requesting a document from a CouchDB database.
+ *
+ * @package Snuggie
+ */
 class GetDocument
 {
     /**
