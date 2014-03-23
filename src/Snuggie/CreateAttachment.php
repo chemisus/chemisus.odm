@@ -17,9 +17,9 @@ class CreateAttachment
         $this->response_factory = $response_factory;
     }
 
-    public function createAttachment($connection, $database, $id, $revision, $name, $file)
+    public function createAttachment(Uploader $uploader, $database, $id, $revision, $name, $file)
     {
-        $value = $connection->request('PUT', $database . '/' . $id . '/' . $name . '?rev=' . $revision, $file);
+        $value = $uploader->upload('PUT', $database . '/' . $id . '/' . $name . '?rev=' . $revision, $file);
 
         $response = $this->response_factory->make($value);
 

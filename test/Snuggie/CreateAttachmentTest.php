@@ -13,7 +13,7 @@ class CreateAttachmentTest extends TestCase
     {
         $rf = new ResponseFactory();
         $op = new CreateAttachment($rf);
-        $connection = Mockery::mock('Snuggie\Connection');
+        $connection = Mockery::mock('Snuggie\Uploader');
         $database = 'recipes';
         $id = 'SpaghettiWithMeatballs';
         $revision = '1-917fa2381192822767f010b95b45325b';
@@ -31,7 +31,7 @@ class CreateAttachmentTest extends TestCase
             '' . "\n" .
             '{"id": "SpaghettiWithMeatballs","ok": true,"rev": "2-ce91aed0129be8f9b0f650a2edcfd0a4"}';
 
-        $connection->shouldReceive('request')->with('PUT', $database . '/' . $id . '/' . $name . '?rev=' . $revision, $file)->once()->andReturn($response);
+        $connection->shouldReceive('upload')->with('PUT', $database . '/' . $id . '/' . $name . '?rev=' . $revision, $file)->once()->andReturn($response);
 
         $document = $op->createAttachment($connection, $database, $id, $revision, $name, $file);
 
@@ -43,7 +43,7 @@ class CreateAttachmentTest extends TestCase
     {
         $rf = new ResponseFactory();
         $op = new CreateAttachment($rf);
-        $connection = Mockery::mock('Snuggie\Connection');
+        $connection = Mockery::mock('Snuggie\Uploader');
         $database = 'recipes';
         $id = 'SpaghettiWithMeatballs';
         $revision = '1-917fa2381192822767f010b95b45325b';
@@ -60,7 +60,7 @@ class CreateAttachmentTest extends TestCase
             '' . "\n" .
             '{}';
 
-        $connection->shouldReceive('request')->with('PUT', $database . '/' . $id . '/' . $name . '?rev=' . $revision, $file)->once()->andReturn($response);
+        $connection->shouldReceive('upload')->with('PUT', $database . '/' . $id . '/' . $name . '?rev=' . $revision, $file)->once()->andReturn($response);
 
         $this->shouldThrow('Snuggie\AttachmentCreationException', function () use ($connection, $database, $id, $op, $revision, $name, $file) {
             $op->createAttachment($connection, $database, $id, $revision, $name, $file);

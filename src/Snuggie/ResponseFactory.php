@@ -24,13 +24,17 @@ class ResponseFactory
         }
 
         while (preg_match('/(.*?):(.*?)\r?\n/', $value, $matches, null, $offset)) {
+            if ($matches[0][0] === '{') {
+                break;
+            }
+
             $headers[trim($matches[1])] = trim($matches[2]);
             $offset += strlen($matches[0]);
         }
 
-        preg_match('/.*\n/', $value, $matches, null, $offset);
-
-        $offset += strlen($matches[0]);
+        if (preg_match('/(\r?\n)/', $value, $matches, null, $offset)) {
+            $offset += strlen($matches[0]);
+        }
 
         $body = substr($value, $offset);
 
