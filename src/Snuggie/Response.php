@@ -43,4 +43,9 @@ class Response
     {
         return $this->body;
     }
+
+    public function success()
+    {
+        return $this->status() === '200';
+    }
 }

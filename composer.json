@@ -8,10 +8,11 @@
     ],
     "autoload": {
         "psr-0": {
-            "Snuggie": "src/"
+            "Snuggie": ["src/", "test/"]
         }
     },
     "require": {
-        "phpunit/phpunit": "*"
+        "phpunit/phpunit": "*",
+        "mockery/mockery": "*"
     }
 }

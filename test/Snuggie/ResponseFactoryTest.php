@@ -2,9 +2,7 @@
 
 namespace Snuggie;
 
-use PHPUnit_Framework_TestCase;
-
-class ResponseFactoryTest extends PHPUnit_Framework_TestCase
+class ResponseFactoryTest extends TestCase
 {
     private $value;
 
