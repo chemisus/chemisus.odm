@@ -48,7 +48,7 @@ class GetDocumentTest extends TestCase
 
         $connection->shouldReceive('request')->with('GET', $database . '/' . $id)->once()->andReturn($response);
 
-        $this->shouldThrow('Exception', function () use ($connection, $database, $id, $op) {
+        $this->shouldThrow('Snuggie\DocumentNotFoundException', function () use ($connection, $database, $id, $op) {
             $op->getDocument($connection, $database, $id);
         });
     }
